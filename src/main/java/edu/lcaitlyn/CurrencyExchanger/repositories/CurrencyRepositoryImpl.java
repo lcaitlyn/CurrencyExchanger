@@ -1,45 +1,165 @@
 package edu.lcaitlyn.CurrencyExchanger.repositories;
 
+import edu.lcaitlyn.CurrencyExchanger.exceptions.CurrencyNotFoundException;
 import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CurrencyRepositoryImpl implements CrudRepository<Currency> {
-    private JdbcTemplate jdbcTemplate;
+    private DataSource dataSource;
 
     public CurrencyRepositoryImpl(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.dataSource = dataSource;
     }
 
     @Override
     public Currency findById(Long id) {
-        return jdbcTemplate.query("select * from currencyexchanger.currencies where id = ?",
-                new Object[]{id}, new BeanPropertyRowMapper<>(Currency.class))
-                .stream().findAny().orElse(null);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT * FROM currencyexchanger.currencies WHERE id=?");) {
+
+            statement.setLong(1, id);
+            statement.execute();
+
+            ResultSet resultSet = statement.getResultSet();
+            Currency currency = null;
+
+            if (resultSet.next()) {
+                currency = new Currency(
+                        resultSet.getString("code"),
+                        resultSet.getString("fullname"),
+                        resultSet.getString("sign").charAt(0));
+                currency.setId(resultSet.getLong("id"));
+            }
+            resultSet.close();
+            return currency;
+
+        } catch (SQLException e) {
+            throw new CurrencyNotFoundException();
+        }
+    }
+
+    @Override
+    public Currency findByName(String name) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT * FROM currencyexchanger.currencies WHERE code=?");) {
+
+            statement.setString(1, name);
+            statement.execute();
+
+            ResultSet resultSet = statement.getResultSet();
+            Currency currency = null;
+
+            if (resultSet.next()) {
+                currency = new Currency(
+                        resultSet.getString("code"),
+                        resultSet.getString("fullname"),
+                        resultSet.getString("sign").charAt(0));
+                currency.setId(resultSet.getLong("id"));
+            }
+            resultSet.close();
+            return currency;
+
+        } catch (SQLException e) {
+            throw new CurrencyNotFoundException();
+        }
     }
 
     @Override
     public List<Currency> findAll() {
-        return jdbcTemplate.query("select * from currencyexchanger.currencies", new BeanPropertyRowMapper<>(Currency.class));
+        List<Currency> list = new ArrayList<>();
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT * FROM currencyexchanger.currencies");) {
+
+            statement.execute();
+            ResultSet resultSet = statement.getResultSet();
+
+            while (resultSet.next()) {
+                Currency currency = new Currency(
+                        resultSet.getString("code"),
+                        resultSet.getString("fullname"),
+                        resultSet.getString("sign").charAt(0));
+                currency.setId(resultSet.getLong("id"));
+                list.add(currency);
+            }
+            resultSet.close();
+            return list;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void save(Currency entity) {
-        jdbcTemplate.update("insert into currencyexchanger.currencies (code, fullname, sign) values (?, ?, ?)",
-                entity.getCode(), entity.getFullName(), entity.getSign());
+        if (findByName(entity.getCode()) != null)
+            return;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "INSERT INTO currencyexchanger.currencies (code, fullname, sign) VALUES (?, ?, ?)")) {
+
+            statement.setString(1, entity.getCode());
+            statement.setString(2, entity.getFullName());
+            statement.setString(3, entity.getSign().toString());
+            statement.execute();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void update(Currency entity) {
-        jdbcTemplate.update("update currencyexchanger.currencies set code=?, fullname=?, sign=? where id = ?",
-                entity.getCode(), entity.getFullName(), entity.getSign(), entity.getId());
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "UPDATE currencyexchanger.currencies SET code=?, fullname=?, sign=? WHERE id=?")) {
+
+            statement.setString(1, entity.getCode());
+            statement.setString(2, entity.getFullName());
+            statement.setString(3, entity.getSign().toString());
+            statement.execute();
+
+            entity.setId(statement.getGeneratedKeys().getLong("id"));
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void delete(Long id) {
-        jdbcTemplate.update("delete from currencyexchanger.currencies where id=?", id);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "DELETE FROM currencyexchanger.currencies WHERE id=?")) {
+
+            statement.setLong(1, id);
+            statement.execute();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void delete(String name) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "DELETE FROM currencyexchanger.currencies WHERE code=?")) {
+
+            statement.setString(1, name);
+            statement.execute();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -1,10 +1,17 @@
 package edu.lcaitlyn.CurrencyExchanger.models;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@JsonPropertyOrder({"id", "code", "name", "sign"})
 public class Currency {
     private Long id;
     private String code;
     private String fullName;
     private Character sign;
+
+    public Currency() {
+    }
 
     public Currency(String code, String fullName, Character sign) {
         this.code = code;
@@ -45,21 +52,27 @@ public class Currency {
     }
 
 
-//    example:
 //    {
 //        "id": 0,
 //        "name": "Euro",
 //        "code": "EUR",
 //        "sign": "€"
 //    }
-
     @Override
     public String toString() {
-        return "{" + "\n" +
-                "\t\"id\": " + id + "\",\n" +
-                "\t\"code\": \"" + code + "\",\n" +
-                "\t\"fullName\": \"" + fullName + "\",\n" +
-                "\t\"sign\": \"" + sign + "\"\n" +
-                "}\n";
+        return "\n{\"id\": " + id + ",\n" +
+                "\t\"name\": " + "\"" + fullName + "\",\n" +
+                "\t\"code\": " + "\"" + code + "\",\n" +
+                "\t\"sign\": " + "\"" + sign +
+                "\"\n}";
     }
+
+    // {"id": 0, "name": "Euro", "code": "EUR", "sign": "€"}
+//    @Override
+//    public String toString() {
+//        return "{\"id\": " + id + ", " +
+//                "\"name\": " + "\"" + fullName + "\", " +
+//                "\"code\": " + "\"" + code + "\", " +
+//                "\"sign\": " + "\"" + sign + "\"}";
+//    }
 }

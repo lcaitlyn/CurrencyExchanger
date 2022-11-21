@@ -9,8 +9,5 @@
         <module name="CurrencyExchanger" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="CurrencyExchanger" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
