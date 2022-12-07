@@ -1,30 +1,25 @@
 <%@ page import="edu.lcaitlyn.CurrencyExchanger.models.Currency" %>
 <%@ page import="java.util.List" %>
+<%@ page import="edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepositoryImpl" %>
+<%@ page import="edu.lcaitlyn.CurrencyExchanger.exceptions.CurrencyNotFoundException" %>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
-<head>
-  <title></title>
-</head>
-<body>
+    <head>
+        <title>Currency</title>
+    </head>
+    <body>
 
-<%
-  for (Currency c : (List<Currency>) request.getAttribute("currenciesList")) {
-    out.println("<ul>");
-    out.println("<li>Code: " + c.getCode() + "</li>");
-    out.println("<li>Name: " + c.getFullName() + "</li>");
-    out.println("<li>Sign: " + c.getSign() + "</li>");
-    out.println("</ul>");
-  }
-%>
+    <%
+        String currencyCode = (String) request.getAttribute("currencyCode");
+        CurrencyRepositoryImpl currencyRepository = (CurrencyRepositoryImpl) request.getAttribute("currencyRepository");
 
-<h2>Добавить валюту:</h2>
+        try {
+            out.println(currencyRepository.findByName(currencyCode));
+        } catch (CurrencyNotFoundException e) {
+            out.println(e.getMessage());
+        }
+    %>
 
-<form method="post" action="/addCurrency">
-  <label>Enter code: <input name="code" type="text" value="${code}"></label><br>
-  <label>Enter name: <input type="text" name="fullName" value="${fullName}"></label><br>
-  <label>Enter code: <input type="text" name="sign" value="${sign}"></label><br>
-  <label><input type="submit" value="Добавить" name="Add"></label><br>
-</form>
-</body>
+    </body>
 </html>

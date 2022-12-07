@@ -15,6 +15,13 @@ public class Currency {
         this.sign = sign;
     }
 
+    public Currency(Long id, String code, String fullName, Character sign) {
+        this.id = id;
+        this.code = code;
+        this.fullName = fullName;
+        this.sign = sign;
+    }
+
     public Long getId() {
         return id;
     }
@@ -56,11 +63,14 @@ public class Currency {
 //    }
     @Override
     public String toString() {
-        return "\n{\"id\": " + id + ",\n" +
+
+        return "{\n" +
+                "\t\"id\": " + id + ",\n" +
                 "\t\"name\": " + "\"" + fullName + "\",\n" +
                 "\t\"code\": " + "\"" + code + "\",\n" +
                 "\t\"sign\": " + "\"" + sign +
-                "\"\n}";
+                "\"\n" +
+                "}";
     }
 
     // {"id": 0, "name": "Euro", "code": "EUR", "sign": "€"}

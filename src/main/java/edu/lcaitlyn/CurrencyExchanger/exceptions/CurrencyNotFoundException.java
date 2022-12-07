@@ -9,8 +9,9 @@ public class CurrencyNotFoundException extends RuntimeException{
             "}";
 
     public CurrencyNotFoundException() {
-        System.err.println("{\n" +
-                "    \"message\": \"Валюта не найдена\"\n" +
-                "}");
+    }
+    @Override
+    public String getMessage() {
+        return message;
     }
 }

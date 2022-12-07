@@ -27,13 +27,10 @@ public class ContextListener implements ServletContextListener {
         CurrencyRepositoryImpl currencyRepository = new CurrencyRepositoryImpl(makeHikariDataSource(context));
 
         context.setAttribute("currencyRepository", currencyRepository);
-        System.out.println("init context");
-        currencyRepository = (CurrencyRepositoryImpl) context.getAttribute("currencyRepository");
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        System.out.println("destroy context");
     }
 
     private HikariDataSource makeHikariDataSource(ServletContext context) {
