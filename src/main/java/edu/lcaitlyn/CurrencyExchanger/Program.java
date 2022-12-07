@@ -1,11 +1,7 @@
 package edu.lcaitlyn.CurrencyExchanger;
 
 import com.zaxxer.hikari.HikariDataSource;
-import edu.lcaitlyn.CurrencyExchanger.config.ApplicationConfig;
-import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepositoryImpl;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 public class Program {
     private static HikariDataSource makeHikariDataSource() {

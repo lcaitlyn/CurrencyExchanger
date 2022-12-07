@@ -5,32 +5,25 @@ import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepositoryImpl;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@WebServlet(name = "indexCurrenciesServlet", value = "/currencies")
 public class IndexCurrenciesServlet extends HttpServlet {
     private CurrencyRepositoryImpl currencyRepository;
-
-    private HikariDataSource makeHikariDataSource() {
-        HikariDataSource hikariDataSource = new HikariDataSource();
-        hikariDataSource.setDriverClassName("org.postgresql.Driver");
-        hikariDataSource.setJdbcUrl("jdbc:postgresql://localhost:5432/postgres");
-        hikariDataSource.setUsername("postgres");
-        hikariDataSource.setPassword("");
-        return hikariDataSource;
-    }
-
     @Override
     public void init(ServletConfig config) throws ServletException {
-        currencyRepository = new CurrencyRepositoryImpl(makeHikariDataSource());
+        currencyRepository = (CurrencyRepositoryImpl) config.getServletContext().getAttribute("currencyRepository");
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setAttribute("currenciesList", currencyRepository.findAll());
-        req.getRequestDispatcher("/index.jsp").forward(req, resp);
+        req.getRequestDispatcher("/currencies.jsp").forward(req, resp);
     }
 }

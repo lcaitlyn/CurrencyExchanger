@@ -1,9 +1,5 @@
 package edu.lcaitlyn.CurrencyExchanger.models;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@JsonPropertyOrder({"id", "code", "name", "sign"})
 public class Currency {
     private Long id;
     private String code;

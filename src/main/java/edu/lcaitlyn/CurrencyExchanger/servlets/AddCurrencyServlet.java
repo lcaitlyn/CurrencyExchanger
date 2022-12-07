@@ -38,8 +38,9 @@ public class AddCurrencyServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/");
 
         currencyRepository.save(new Currency(code, fullName, sign.charAt(0)));
+        req.setAttribute("currenciesList", currencyRepository.findAll());
 
-        resp.sendRedirect(req.getContextPath() + "/");
+        resp.sendRedirect(req.getContextPath() + "/currencies");
     }
 
     private boolean checkArgs(String code, String fullName, String sign) {
