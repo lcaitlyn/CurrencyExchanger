@@ -1,14 +1,10 @@
 package edu.lcaitlyn.CurrencyExchanger.servlets;
 
 import com.zaxxer.hikari.HikariDataSource;
-import edu.lcaitlyn.CurrencyExchanger.models.Currency;
-import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepositoryImpl;
+import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepository;
 
 import javax.servlet.*;
-import javax.servlet.http.*;
 import javax.servlet.annotation.*;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -24,7 +20,7 @@ public class ContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
 
-        CurrencyRepositoryImpl currencyRepository = new CurrencyRepositoryImpl(makeHikariDataSource(context));
+        CurrencyRepository currencyRepository = new CurrencyRepository(makeHikariDataSource(context));
 
         context.setAttribute("currencyRepository", currencyRepository);
     }

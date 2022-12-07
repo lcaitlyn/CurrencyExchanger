@@ -2,7 +2,7 @@ package edu.lcaitlyn.CurrencyExchanger.servlets;
 
 import com.zaxxer.hikari.HikariDataSource;
 import edu.lcaitlyn.CurrencyExchanger.models.Currency;
-import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepositoryImpl;
+import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepository;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -11,7 +11,7 @@ import java.io.IOException;
 
 @WebServlet(name = "AddCurrencyServlet", value = "/addCurrency")
 public class AddCurrencyServlet extends HttpServlet {
-    private CurrencyRepositoryImpl currencyRepository;
+    private CurrencyRepository currencyRepository;
     private HikariDataSource makeHikariDataSource() {
         HikariDataSource hikariDataSource = new HikariDataSource();
         hikariDataSource.setDriverClassName("org.postgresql.Driver");
@@ -23,7 +23,7 @@ public class AddCurrencyServlet extends HttpServlet {
 
     @Override
     public void init(ServletConfig config) throws ServletException {
-        currencyRepository = new CurrencyRepositoryImpl(makeHikariDataSource());
+        currencyRepository = new CurrencyRepository(makeHikariDataSource());
     }
 
     @Override

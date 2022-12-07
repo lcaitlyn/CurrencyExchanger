@@ -2,18 +2,16 @@ package edu.lcaitlyn.CurrencyExchanger.repositories;
 
 import edu.lcaitlyn.CurrencyExchanger.exceptions.CurrencyNotFoundException;
 import edu.lcaitlyn.CurrencyExchanger.models.Currency;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CurrencyRepositoryImpl implements CrudRepository<Currency> {
+public class CurrencyRepository implements CrudRepository<Currency> {
     private DataSource dataSource;
 
-    public CurrencyRepositoryImpl(DataSource dataSource) {
+    public CurrencyRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -44,7 +42,6 @@ public class CurrencyRepositoryImpl implements CrudRepository<Currency> {
         }
     }
 
-    @Override
     public Currency findByName(String name) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
@@ -152,7 +149,6 @@ public class CurrencyRepositoryImpl implements CrudRepository<Currency> {
         }
     }
 
-    @Override
     public void delete(String name) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(

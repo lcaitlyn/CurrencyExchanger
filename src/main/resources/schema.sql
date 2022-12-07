@@ -9,7 +9,7 @@ create table if not exists CurrencyExchanger.Currencies (
 
 create table if not exists CurrencyExchanger.ExchangeRates (
     ID serial primary key,
-    BaseCurrencyId int not null unique references CurrencyExchanger.currencies(ID),
-    TargetCurrencyId int not null unique references CurrencyExchanger.currencies(ID),
+    BaseCurrencyId int not null references CurrencyExchanger.currencies(ID),
+    TargetCurrencyId int not null references CurrencyExchanger.currencies(ID),
     Rate decimal(6) not null
 );
