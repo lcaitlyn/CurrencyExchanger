@@ -1,6 +1,6 @@
 package edu.lcaitlyn.CurrencyExchanger.servlets;
 
-import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepository;
+import edu.lcaitlyn.CurrencyExchanger.repositories.ExchangeRatesRepository;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -12,15 +12,15 @@ import java.io.IOException;
 
 @WebServlet(name = "exchangeRates", value = "/exchangeRates")
 public class IndexExchangeRates extends HttpServlet {
-    private CurrencyRepository currencyRepository;
+    private ExchangeRatesRepository exchangeRatesRepository;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
-        currencyRepository = (CurrencyRepository) config.getServletContext().getAttribute("currencyRepository");
+        exchangeRatesRepository = (ExchangeRatesRepository) config.getServletContext().getAttribute("exchangeRatesRepository");
     }
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setAttribute("currenciesList", currencyRepository.findAll());
+        req.setAttribute("exchangeRatesList", exchangeRatesRepository.findAll());
         req.getRequestDispatcher("/exchangeRates.jsp").forward(req, resp);
     }
 }

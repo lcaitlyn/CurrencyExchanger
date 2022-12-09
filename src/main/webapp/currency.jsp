@@ -15,9 +15,9 @@
         CurrencyRepository currencyRepository = (CurrencyRepository) request.getAttribute("currencyRepository");
 
         try {
-            out.println(currencyRepository.findByName(currencyCode));
+            out.println(currencyRepository.findByName(currencyCode).toString().replaceAll("\n", "<br>"));
         } catch (CurrencyNotFoundException e) {
-            out.println(e.getMessage());
+            out.println(e.getMessage().toString().replaceAll("\n", "<br>"));
         }
     %>
 

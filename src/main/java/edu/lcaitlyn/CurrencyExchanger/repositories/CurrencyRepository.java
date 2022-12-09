@@ -139,9 +139,8 @@ public class CurrencyRepository implements CrudRepository<Currency> {
     public void delete(Long id) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
-                     "DELETE FROM currencyexchanger.currencies WHERE id=?")) {
+                     "DELETE FROM currencyexchanger.currencies WHERE id=" + id)) {
 
-            statement.setLong(1, id);
             statement.execute();
 
         } catch (SQLException e) {

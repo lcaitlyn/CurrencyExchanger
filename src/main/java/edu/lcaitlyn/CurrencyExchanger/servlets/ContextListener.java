@@ -2,6 +2,7 @@ package edu.lcaitlyn.CurrencyExchanger.servlets;
 
 import com.zaxxer.hikari.HikariDataSource;
 import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepository;
+import edu.lcaitlyn.CurrencyExchanger.repositories.ExchangeRatesRepository;
 
 import javax.servlet.*;
 import javax.servlet.annotation.*;
@@ -21,8 +22,10 @@ public class ContextListener implements ServletContextListener {
         ServletContext context = sce.getServletContext();
 
         CurrencyRepository currencyRepository = new CurrencyRepository(makeHikariDataSource(context));
+        ExchangeRatesRepository exchangeRatesRepository = new ExchangeRatesRepository(makeHikariDataSource(context));
 
         context.setAttribute("currencyRepository", currencyRepository);
+        context.setAttribute("exchangeRatesRepository", exchangeRatesRepository);
     }
 
     @Override
