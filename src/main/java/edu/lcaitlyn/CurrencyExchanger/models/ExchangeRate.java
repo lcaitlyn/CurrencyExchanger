@@ -51,32 +51,12 @@ public class ExchangeRate {
         this.rate = rate;
     }
 
-//    "id": 0,
-//    "exchangeRate": {
-//        "baseCurrency": {
-//            "id": 0,
-//            "name": "United States dollar",
-//            "code": "USD",
-//            "sign": "$"
-//        },
-//        "targetCurrency": {
-//            "id": 1,
-//            "name": "Euro",
-//            "code": "EUR",
-//            "sign": "€"
-//        },
-//        "rate": 0.99
-//    }
-    public String toHTML() {
-        return "{<br>" +
-                "&emsp;\"id\": " + id + ",<br>" +
-                "&emsp;\"baseCurrency\": " + baseCurrency.toHTML() + ",<br>" +
-                "&emsp;\"targetCurrency\": " + targetCurrency.toHTML() + ",<br>" +
-                "&emsp;\"rate\": " + rate + ",<br>" +
-                "}";
-    }
-
-//  Base Currency: {"id": 1, "name": "Euro", "code": "EUR", "sign": "€"} Target Currency: {"id": 6, "name": "Pound Sterling", "code": "GBP", "sign": "£"} Rate: 1.0
+//  {
+//      "id": 1,
+//      baseCurrency: {"id": 1, "name": "Euro", "code": "EUR", "sign": "€"},
+//      targetCurrency: {"id": 6, "name": "Pound Sterling", "code": "GBP", "sign": "£"},
+//      rate: 1.05
+//  }
     @Override
     public String toString() {
         return String.format("{\n" +

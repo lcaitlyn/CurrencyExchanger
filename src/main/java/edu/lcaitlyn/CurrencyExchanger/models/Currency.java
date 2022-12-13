@@ -56,24 +56,6 @@ public class Currency {
         this.sign = sign;
     }
 
-
-//    {
-//        "id": 0,
-//        "name": "Euro",
-//        "code": "EUR",
-//        "sign": "€"
-//    }
-    public String toHTML() {
-
-        return "{<br>" +
-                "&emsp;\"id\": " + id + ",<br>" +
-                "&emsp;\"name\": " + "\"" + fullName + "\",<br>" +
-                "&emsp;\"code\": " + "\"" + code + "\",<br>" +
-                "&emsp;\"sign\": " + "\"" + sign +
-                "\"<br>" +
-                "}";
-    }
-
 //     {"id": 0, "name": "Euro", "code": "EUR", "sign": "€"}
     @Override
     public String toString() {
