@@ -1,5 +1,8 @@
 package edu.lcaitlyn.CurrencyExchanger.servlets;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.lcaitlyn.CurrencyExchanger.exceptions.CurrencyNotFoundException;
+import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepository;
 
 import javax.servlet.*;
@@ -18,14 +21,22 @@ public class CurrencyServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (request.getPathInfo().equals("/currency.jsp"))
+        if (request.getPathInfo() == null || request.getPathInfo().equals("/")) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Указана не корректная валюта. Пример: .../currency/USD");
             return;
+        }
 
         String currencyCode = request.getPathInfo().replaceFirst("/", "").toUpperCase();
 
-        request.setAttribute("currencyCode", currencyCode);
-        request.setAttribute("currencyRepository", currencyRepository);
+        Currency currency = currencyRepository.findByName(currencyCode);
 
-        request.getRequestDispatcher("/currency.jsp").forward(request, response);
+        if (currency == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Валюта не найдена. Пример: .../currency/USD");
+            return;
+        }
+
+        response.setCharacterEncoding("UTF-8");
+
+        response.getWriter().write(new ObjectMapper().writeValueAsString(currency));
     }
 }

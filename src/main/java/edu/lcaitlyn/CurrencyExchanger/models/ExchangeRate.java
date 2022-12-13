@@ -4,16 +4,16 @@ public class ExchangeRate {
     private Long id;
     private Currency baseCurrency;
     private Currency targetCurrency;
-    private Float rate;
+    private Double rate;
 
-    public ExchangeRate(Long id, Currency baseCurrency, Currency targetCurrency, Float rate) {
+    public ExchangeRate(Long id, Currency baseCurrency, Currency targetCurrency, Double rate) {
         this.id = id;
         this.baseCurrency = baseCurrency;
         this.targetCurrency = targetCurrency;
         this.rate = rate;
     }
 
-    public ExchangeRate(Currency baseCurrency, Currency targetCurrency, Float rate) {
+    public ExchangeRate(Currency baseCurrency, Currency targetCurrency, Double rate) {
         this.baseCurrency = baseCurrency;
         this.targetCurrency = targetCurrency;
         this.rate = rate;
@@ -43,30 +43,40 @@ public class ExchangeRate {
         this.targetCurrency = targetCurrency;
     }
 
-    public Float getRate() {
+    public Double getRate() {
         return rate;
     }
 
-    public void setRate(Float rate) {
+    public void setRate(Double rate) {
         this.rate = rate;
     }
 
-//    {
-//        "id": 0,
-//            "baseCurrency": {
-//        "id": 0,
-//                "name": "United States dollar",
-//                "code": "USD",
-//                "sign": "$"
-//    },
+//    "id": 0,
+//    "exchangeRate": {
+//        "baseCurrency": {
+//            "id": 0,
+//            "name": "United States dollar",
+//            "code": "USD",
+//            "sign": "$"
+//        },
 //        "targetCurrency": {
-//        "id": 1,
-//                "name": "Euro",
-//                "code": "EUR",
-//                "sign": "€"
-//    },
+//            "id": 1,
+//            "name": "Euro",
+//            "code": "EUR",
+//            "sign": "€"
+//        },
 //        "rate": 0.99
 //    }
+    public String toHTML() {
+        return "{<br>" +
+                "&emsp;\"id\": " + id + ",<br>" +
+                "&emsp;\"baseCurrency\": " + baseCurrency.toHTML() + ",<br>" +
+                "&emsp;\"targetCurrency\": " + targetCurrency.toHTML() + ",<br>" +
+                "&emsp;\"rate\": " + rate + ",<br>" +
+                "}";
+    }
+
+//  Base Currency: {"id": 1, "name": "Euro", "code": "EUR", "sign": "€"} Target Currency: {"id": 6, "name": "Pound Sterling", "code": "GBP", "sign": "£"} Rate: 1.0
     @Override
     public String toString() {
         return String.format("{\n" +

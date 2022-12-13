@@ -17,6 +17,7 @@ public class CurrencyRepository implements CrudRepository<Currency> {
 
     @Override
     public Currency findById(Long id) {
+        Currency currency = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                      "SELECT * FROM currencyexchanger.currencies WHERE id=?");) {
@@ -25,7 +26,6 @@ public class CurrencyRepository implements CrudRepository<Currency> {
             statement.execute();
 
             ResultSet resultSet = statement.getResultSet();
-            Currency currency = null;
 
             if (resultSet.next()) {
                 currency = new Currency(
@@ -38,11 +38,12 @@ public class CurrencyRepository implements CrudRepository<Currency> {
             return currency;
 
         } catch (SQLException e) {
-            throw new CurrencyNotFoundException();
+            throw new RuntimeException(e);
         }
     }
 
     public Currency findByName(String name) {
+        Currency currency = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                      "SELECT * FROM currencyexchanger.currencies WHERE code=?");) {
@@ -51,19 +52,19 @@ public class CurrencyRepository implements CrudRepository<Currency> {
             statement.execute();
 
             ResultSet resultSet = statement.getResultSet();
-            Currency currency = null;
 
-            if (!resultSet.next())
-                throw new CurrencyNotFoundException();
-
-            return new Currency(
-                    resultSet.getLong("id"),
-                    resultSet.getString("code"),
-                    resultSet.getString("fullname"),
-                    resultSet.getString("sign").charAt(0));
+            if (resultSet.next()) {
+                currency = new Currency(
+                        resultSet.getLong("id"),
+                        resultSet.getString("code"),
+                        resultSet.getString("fullname"),
+                        resultSet.getString("sign").charAt(0));
+            }
+            resultSet.close();
+            return currency;
 
         } catch (SQLException e) {
-            throw new CurrencyNotFoundException();
+            throw new RuntimeException(e);
         }
     }
 
@@ -96,13 +97,6 @@ public class CurrencyRepository implements CrudRepository<Currency> {
 
     @Override
     public void save(Currency entity) {
-        try {
-            findByName(entity.getCode());
-            return;
-        } catch (CurrencyNotFoundException e) {
-
-        }
-
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                      "INSERT INTO currencyexchanger.currencies (code, fullname, sign) VALUES (?, ?, ?)")) {

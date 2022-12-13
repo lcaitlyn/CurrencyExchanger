@@ -1,5 +1,7 @@
 package edu.lcaitlyn.CurrencyExchanger.models;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+@JsonPropertyOrder({"id", "code", "fullName", "sign"})
 public class Currency {
     private Long id;
     private String code;
@@ -61,24 +63,23 @@ public class Currency {
 //        "code": "EUR",
 //        "sign": "€"
 //    }
-    @Override
-    public String toString() {
+    public String toHTML() {
 
-        return "{\n" +
-                "\t\"id\": " + id + ",\n" +
-                "\t\"name\": " + "\"" + fullName + "\",\n" +
-                "\t\"code\": " + "\"" + code + "\",\n" +
-                "\t\"sign\": " + "\"" + sign +
-                "\"\n" +
+        return "{<br>" +
+                "&emsp;\"id\": " + id + ",<br>" +
+                "&emsp;\"name\": " + "\"" + fullName + "\",<br>" +
+                "&emsp;\"code\": " + "\"" + code + "\",<br>" +
+                "&emsp;\"sign\": " + "\"" + sign +
+                "\"<br>" +
                 "}";
     }
 
-    // {"id": 0, "name": "Euro", "code": "EUR", "sign": "€"}
-//    @Override
-//    public String toString() {
-//        return "{\"id\": " + id + ", " +
-//                "\"name\": " + "\"" + fullName + "\", " +
-//                "\"code\": " + "\"" + code + "\", " +
-//                "\"sign\": " + "\"" + sign + "\"}";
-//    }
+//     {"id": 0, "name": "Euro", "code": "EUR", "sign": "€"}
+    @Override
+    public String toString() {
+        return "{\"id\": " + id + ", " +
+                "\"name\": " + "\"" + fullName + "\", " +
+                "\"code\": " + "\"" + code + "\", " +
+                "\"sign\": " + "\"" + sign + "\"}";
+    }
 }

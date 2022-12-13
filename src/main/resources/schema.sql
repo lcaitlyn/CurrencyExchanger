@@ -11,5 +11,5 @@ create table if not exists CurrencyExchanger.ExchangeRates (
     ID serial primary key,
     BaseCurrencyId int not null references CurrencyExchanger.currencies(ID),
     TargetCurrencyId int not null references CurrencyExchanger.currencies(ID),
-    Rate decimal(6) not null
+    Rate double precision not null
 );
