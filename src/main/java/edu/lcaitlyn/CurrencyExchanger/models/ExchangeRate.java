@@ -53,9 +53,9 @@ public class ExchangeRate {
 
 //  {
 //      "id": 1,
-//      baseCurrency: {"id": 1, "name": "Euro", "code": "EUR", "sign": "€"},
-//      targetCurrency: {"id": 6, "name": "Pound Sterling", "code": "GBP", "sign": "£"},
-//      rate: 1.05
+//      "baseCurrency": {"id": 1, "name": "Euro", "code": "EUR", "sign": "€"},
+//      "targetCurrency": {"id": 6, "name": "Pound Sterling", "code": "GBP", "sign": "£"},
+//      "rate": 1.05
 //  }
     @Override
     public String toString() {
