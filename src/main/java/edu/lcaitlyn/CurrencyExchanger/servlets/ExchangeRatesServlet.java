@@ -5,6 +5,7 @@ import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 import edu.lcaitlyn.CurrencyExchanger.models.ExchangeRate;
 import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepository;
 import edu.lcaitlyn.CurrencyExchanger.repositories.ExchangeRatesRepository;
+import edu.lcaitlyn.CurrencyExchanger.utils.Utils;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -13,11 +14,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.stream.Collectors;
 
 @MultipartConfig
 @WebServlet(name = "exchangeRates", value = "/exchangeRates")
@@ -41,12 +38,12 @@ public class ExchangeRatesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
 
-        String baseCurrencyCode = getStringFormInputStream(req.getPart("baseCurrencyCode").getInputStream());
-        String targetCurrencyCode = getStringFormInputStream(req.getPart("targetCurrencyCode").getInputStream());
-        String rate = getStringFormInputStream(req.getPart("rate").getInputStream());
+        String baseCurrencyCode = Utils.getStringFromPartName(req, "baseCurrencyCode");
+        String targetCurrencyCode = Utils.getStringFromPartName(req, "targetCurrencyCode");
+        String rate = Utils.getStringFromPartName(req, "rate");
 
         if (isNotValidArgs(baseCurrencyCode, targetCurrencyCode, rate)
-                || !isRateDouble(rate)) {
+                || !Utils.isStringDouble(rate)) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Не правильно введены данные. Пример: baseCurrency = 'USD', targetCurrency = 'EUR', rate = '1.05'");
             return;
         }
@@ -83,23 +80,9 @@ public class ExchangeRatesServlet extends HttpServlet {
         doGet(req, resp);
     }
 
-    private String getStringFormInputStream(InputStream inputStream) {
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines().collect(Collectors.joining("\n"));
-    }
-
-    private boolean isNotValidArgs(String base, String target, String rate) {
+    public boolean isNotValidArgs(String base, String target, String rate) {
         return (base == null || target == null || rate == null
                 || base.isEmpty() || target.isEmpty() || rate.isEmpty()
                 || base.length() != 3 || target.length() != 3);
-    }
-
-    private boolean isRateDouble(String rate) {
-        try {
-            Double.parseDouble(rate);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 }

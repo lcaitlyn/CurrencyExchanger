@@ -1,6 +1,5 @@
 package edu.lcaitlyn.CurrencyExchanger.repositories;
 
-import edu.lcaitlyn.CurrencyExchanger.exceptions.CurrencyNotFoundException;
 import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 
 import javax.sql.DataSource;

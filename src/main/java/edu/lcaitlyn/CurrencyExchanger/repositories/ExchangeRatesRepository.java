@@ -1,10 +1,6 @@
 package edu.lcaitlyn.CurrencyExchanger.repositories;
 
-import edu.lcaitlyn.CurrencyExchanger.exceptions.CurrencyNotFoundException;
-import edu.lcaitlyn.CurrencyExchanger.exceptions.ExchangeRateNotFoundException;
-import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 import edu.lcaitlyn.CurrencyExchanger.models.ExchangeRate;
-import org.apache.taglibs.standard.tag.common.xml.ParseSupport;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

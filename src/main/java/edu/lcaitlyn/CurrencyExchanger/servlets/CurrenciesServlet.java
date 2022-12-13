@@ -3,6 +3,7 @@ package edu.lcaitlyn.CurrencyExchanger.servlets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepository;
+import edu.lcaitlyn.CurrencyExchanger.utils.Utils;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -35,9 +36,9 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
 
-        String code = getStringFormInputStream(req.getPart("code").getInputStream());
-        String name = getStringFormInputStream(req.getPart("name").getInputStream());
-        String sign = getStringFormInputStream(req.getPart("sign").getInputStream());
+        String code = Utils.getStringFromPartName(req, "code");
+        String name = Utils.getStringFromPartName(req, "name");
+        String sign = Utils.getStringFromPartName(req, "sign");
 
         if (isNotValidArgs(code, name, sign)) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Не правильно введены данные. Пример: code = 'USD', name = 'US Dollar', sign = '$'");
@@ -54,23 +55,9 @@ public class CurrenciesServlet extends HttpServlet {
         doGet(req, resp);
     }
 
-    private String getStringFormInputStream(InputStream inputStream) {
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines().collect(Collectors.joining("\n"));
-    }
-
-    private boolean isNotValidArgs(String code, String name, String sign) {
+    public boolean isNotValidArgs(String code, String name, String sign) {
         return  (code == null || name == null || sign == null
                 || code.isEmpty() || name.isEmpty() || sign.isEmpty()
                 || code.length() != 3 || name.length() > 100 || sign.length() > 3);
-    }
-
-    private boolean isRateDouble(String rate) {
-        try {
-            Double.parseDouble(rate);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 }

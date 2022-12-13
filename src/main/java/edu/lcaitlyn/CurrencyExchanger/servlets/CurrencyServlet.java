@@ -1,7 +1,6 @@
 package edu.lcaitlyn.CurrencyExchanger.servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.lcaitlyn.CurrencyExchanger.exceptions.CurrencyNotFoundException;
 import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepository;
 

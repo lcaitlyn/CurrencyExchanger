@@ -12,7 +12,6 @@ import java.util.Properties;
 @WebListener
 public class ContextListener implements ServletContextListener {
 
-
     public ContextListener() {
 
     }
