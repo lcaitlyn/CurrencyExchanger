@@ -28,13 +28,11 @@ public class ExchangeServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-
         String from = request.getParameter("from");
         String to = request.getParameter("to");
         String amount = request.getParameter("amount");
 
-        if (isNotValidArgs(from, to, amount) || !Utils.isStringInteger(amount)) {
+        if (Utils.isNotValidExchangeArgs(from, to, amount) || !Utils.isStringInteger(amount)) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Неправильно введен запрос. Пример: /exchange?from=USD&to=RUB&amount=10");
             return;
         }
@@ -50,14 +48,12 @@ public class ExchangeServlet extends HttpServlet {
         ExchangeRate exchangeRate;
         Double rate;
         Integer value = Integer.parseInt(amount);
-        Double convertedAmount;
 
-        if ((exchangeRate = exchangeRatesRepository.findByCodes(from, to)) != null) {
+        if ((exchangeRate = exchangeRatesRepository.findByCodes(from, to)) != null)
             rate = exchangeRate.getRate();
-        }
-        else if ((exchangeRate = exchangeRatesRepository.findByCodes(to, from)) != null) {
+        else if ((exchangeRate = exchangeRatesRepository.findByCodes(to, from)) != null)
             rate = 1 / exchangeRate.getRate();
-        } else {
+        else {
             ExchangeRate exchangeRateUSD_A = exchangeRatesRepository.findByCodes("USD", from);
             ExchangeRate exchangeRateUSD_B = exchangeRatesRepository.findByCodes("USD", to);
 
@@ -65,12 +61,30 @@ public class ExchangeServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Не существует курс обмена");
                 return;
             }
+
             rate = exchangeRateUSD_B.getRate() / exchangeRateUSD_A.getRate();
         }
 
         response.getWriter().write(makeJSON(fromCurrency, toCurrency, rate, value));
     }
 
+//    {
+//        "baseCurrency": {
+//                "id": 1,
+//                "code": "USD",
+//                "fullName": "US Dollar",
+//                "sign": "$"
+//        },
+//        "targetCurrency": {
+//                "id": 3,
+//                "code": "RUB",
+//                "fullName": "Russian Ruble",
+//                "sign": "₽"
+//        },
+//        "rate": 63.75,
+//        "amount": 10,
+//        "convertedAmount": 637.5
+//    }
     private String makeJSON(Currency from, Currency to, Double rate, Integer amount) {
         JsonFactory jsonFactory = new JsonFactory();
         StringWriter stringWriter = new StringWriter();
@@ -90,11 +104,5 @@ public class ExchangeServlet extends HttpServlet {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private boolean isNotValidArgs(String from, String to, String amount) {
-        return  (from == null || to == null || amount == null
-                || from.isEmpty() || to.isEmpty() || amount.isEmpty()
-                || from.length() != 3 || to.length() != 3);
     }
 }

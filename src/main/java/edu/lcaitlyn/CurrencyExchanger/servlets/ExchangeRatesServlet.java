@@ -29,20 +29,16 @@ public class ExchangeRatesServlet extends HttpServlet {
     }
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setCharacterEncoding("UTF-8");
-
         new ObjectMapper().writeValue(resp.getWriter(), exchangeRatesRepository.findAll());
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8");
-
         String baseCurrencyCode = Utils.getStringFromPartName(req, "baseCurrencyCode");
         String targetCurrencyCode = Utils.getStringFromPartName(req, "targetCurrencyCode");
         String rate = Utils.getStringFromPartName(req, "rate");
 
-        if (isNotValidArgs(baseCurrencyCode, targetCurrencyCode, rate)
+        if (Utils.isNotValidExchangeArgs(baseCurrencyCode, targetCurrencyCode, rate)
                 || !Utils.isStringDouble(rate)) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Не правильно введены данные. Пример: baseCurrency = 'USD', targetCurrency = 'EUR', rate = '1.05'");
             return;
@@ -61,11 +57,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             return;
         }
 
-        ExchangeRate exchangeRate = new ExchangeRate(
-                baseCurrency,
-                targetCurrency,
-                Double.parseDouble(rate)
-        );
+        ExchangeRate exchangeRate = new ExchangeRate(baseCurrency, targetCurrency, Double.parseDouble(rate));
 
         exchangeRatesRepository.save(exchangeRate);
 
@@ -78,11 +70,5 @@ public class ExchangeRatesServlet extends HttpServlet {
         }
 
         doGet(req, resp);
-    }
-
-    public boolean isNotValidArgs(String base, String target, String rate) {
-        return (base == null || target == null || rate == null
-                || base.isEmpty() || target.isEmpty() || rate.isEmpty()
-                || base.length() != 3 || target.length() != 3);
     }
 }

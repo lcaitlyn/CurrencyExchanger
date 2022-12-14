@@ -39,4 +39,16 @@ public class Utils {
             return false;
         }
     }
+
+    public static boolean isNotValidCurrenciesArgs(String code, String name, String sign) {
+        return  (code == null || name == null || sign == null
+                || code.isEmpty() || name.isEmpty() || sign.isEmpty()
+                || code.length() != 3 || name.length() > 100 || sign.length() > 3);
+    }
+
+    public static boolean isNotValidExchangeArgs(String base, String target, String rate) {
+        return (base == null || target == null || rate == null
+                || base.isEmpty() || target.isEmpty() || rate.isEmpty()
+                || base.length() != 3 || target.length() != 3);
+    }
 }

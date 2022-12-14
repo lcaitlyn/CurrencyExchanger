@@ -27,20 +27,16 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setCharacterEncoding("UTF-8");
-
         new ObjectMapper().writeValue(resp.getWriter(), currencyRepository.findAll());
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8");
-
         String code = Utils.getStringFromPartName(req, "code");
         String name = Utils.getStringFromPartName(req, "name");
         String sign = Utils.getStringFromPartName(req, "sign");
 
-        if (isNotValidArgs(code, name, sign)) {
+        if (Utils.isNotValidCurrenciesArgs(code, name, sign)) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Не правильно введены данные. Пример: code = 'USD', name = 'US Dollar', sign = '$'");
             return;
         }
@@ -53,11 +49,5 @@ public class CurrenciesServlet extends HttpServlet {
         currencyRepository.save(new Currency(code, name, sign.charAt(0)));
 
         doGet(req, resp);
-    }
-
-    public boolean isNotValidArgs(String code, String name, String sign) {
-        return  (code == null || name == null || sign == null
-                || code.isEmpty() || name.isEmpty() || sign.isEmpty()
-                || code.length() != 3 || name.length() > 100 || sign.length() > 3);
     }
 }

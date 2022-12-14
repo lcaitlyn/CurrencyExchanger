@@ -22,7 +22,6 @@ public class ExchangeRateServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println(req.getMethod());
         if (req.getMethod().equals("PATCH"))
             doPatch(req, resp);
         else
@@ -35,10 +34,6 @@ public class ExchangeRateServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Коды валют пары отсутствуют в адресе. Пример: .../exchangeRate/USDRUB");
             return;
         }
-
-        // ну и тут такой же костыль как в currency
-        if (request.getPathInfo().equals("/jsp/exchangeRate.jsp"))
-            return;
 
         String currenciesCodes = request.getPathInfo().replaceFirst("/", "").toUpperCase();
 
@@ -61,8 +56,6 @@ public class ExchangeRateServlet extends HttpServlet {
     }
 
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-
         String rate = Utils.getStringFromPartName(request, "rate");
 
         if (rate == null || rate.isEmpty()) {
@@ -75,7 +68,6 @@ public class ExchangeRateServlet extends HttpServlet {
             return;
         }
 
-
         String currenciesCodes = request.getPathInfo().replaceFirst("/", "").toUpperCase();
 
         String baseCurrencyCode = currenciesCodes.substring(0, 3);
@@ -84,9 +76,12 @@ public class ExchangeRateServlet extends HttpServlet {
         ExchangeRate exchangeRate = exchangeRatesRepository.findByCodes(baseCurrencyCode, targetCurrencyCode);
 
         exchangeRate.setRate(Double.parseDouble(rate));
+
         exchangeRatesRepository.update(exchangeRate);
 
+        // проверка, если есть такой же, только в другом порядке, то его обновляю
         exchangeRate = exchangeRatesRepository.findByCodes(targetCurrencyCode, baseCurrencyCode);
+
         if (exchangeRate != null) {
             exchangeRate.setRate(1 / Double.parseDouble(rate));
             exchangeRatesRepository.update(exchangeRate);
