@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "eda47db8-c703-42c7-ae9f-9f486fe0040c",
+		"_postman_id": "f421a7d7-38d2-424d-862b-fe230eebd20d",
 		"name": "CurrencyExchanger",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24922321"
 	},
 	"item": [
 		{
@@ -181,12 +182,12 @@
 			"response": []
 		},
 		{
-			"name": "/exchangeRate/EURRUB",
+			"name": "/exchangeRate/USDRUB",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/exchangeRate/EURRUB",
+					"raw": "http://localhost:8080/exchangeRate/USDRUB",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -194,14 +195,14 @@
 					"port": "8080",
 					"path": [
 						"exchangeRate",
-						"EURRUB"
+						"USDRUB"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "/exchangeRate/EURRUB",
+			"name": "/exchangeRate/USDRUB",
 			"request": {
 				"method": "PATCH",
 				"header": [],
@@ -216,7 +217,7 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:8080/exchangeRate/EURRUB",
+					"raw": "http://localhost:8080/exchangeRate/USDRUB",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -224,7 +225,7 @@
 					"port": "8080",
 					"path": [
 						"exchangeRate",
-						"EURRUB"
+						"USDRUB"
 					]
 				}
 			},

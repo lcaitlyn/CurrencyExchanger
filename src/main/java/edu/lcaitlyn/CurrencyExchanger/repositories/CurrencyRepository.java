@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CurrencyRepository implements CrudRepository<Currency> {
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     public CurrencyRepository(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -16,66 +16,67 @@ public class CurrencyRepository implements CrudRepository<Currency> {
 
     @Override
     public Currency findById(Long id) {
-        Currency currency = null;
+        final String query = "SELECT * FROM currencyexchanger.currencies WHERE id=?";
+
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT * FROM currencyexchanger.currencies WHERE id=?");) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setLong(1, id);
+
             statement.execute();
 
             ResultSet resultSet = statement.getResultSet();
 
             if (resultSet.next()) {
-                currency = new Currency(
-                        resultSet.getString("code"),
-                        resultSet.getString("fullname"),
-                        resultSet.getString("sign").charAt(0));
-                currency.setId(resultSet.getLong("id"));
-            }
-            resultSet.close();
-            return currency;
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Currency findByName(String name) {
-        Currency currency = null;
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT * FROM currencyexchanger.currencies WHERE code=?");) {
-
-            statement.setString(1, name);
-            statement.execute();
-
-            ResultSet resultSet = statement.getResultSet();
-
-            if (resultSet.next()) {
-                currency = new Currency(
+                return new Currency(
                         resultSet.getLong("id"),
                         resultSet.getString("code"),
                         resultSet.getString("fullname"),
                         resultSet.getString("sign").charAt(0));
             }
-            resultSet.close();
-            return currency;
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return null;
+    }
+
+    public Currency findByName(String name) {
+        final String query = "SELECT * FROM currencyexchanger.currencies WHERE code=?";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)){
+
+            statement.setString(1, name);
+
+            statement.execute();
+
+            ResultSet resultSet = statement.getResultSet();
+
+            if (resultSet.next()) {
+                return new Currency(
+                        resultSet.getLong("id"),
+                        resultSet.getString("code"),
+                        resultSet.getString("fullname"),
+                        resultSet.getString("sign").charAt(0));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     @Override
     public List<Currency> findAll() {
+        final String query = "SELECT * FROM currencyexchanger.currencies";
+
         List<Currency> list = new ArrayList<>();
 
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT * FROM currencyexchanger.currencies");) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.execute();
+
             ResultSet resultSet = statement.getResultSet();
 
             while (resultSet.next()) {
@@ -86,7 +87,7 @@ public class CurrencyRepository implements CrudRepository<Currency> {
                 currency.setId(resultSet.getLong("id"));
                 list.add(currency);
             }
-            resultSet.close();
+
             return list;
 
         } catch (SQLException e) {
@@ -96,9 +97,10 @@ public class CurrencyRepository implements CrudRepository<Currency> {
 
     @Override
     public void save(Currency entity) {
+        final String query = "INSERT INTO currencyexchanger.currencies (code, fullname, sign) VALUES (?, ?, ?)";
+
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "INSERT INTO currencyexchanger.currencies (code, fullname, sign) VALUES (?, ?, ?)")) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, entity.getCode());
             statement.setString(2, entity.getFullName());
@@ -112,16 +114,16 @@ public class CurrencyRepository implements CrudRepository<Currency> {
 
     @Override
     public void update(Currency entity) {
+        final String query = "UPDATE currencyexchanger.currencies SET code=?, fullname=?, sign=? WHERE id=?";
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "UPDATE currencyexchanger.currencies SET code=?, fullname=?, sign=? WHERE id=?")) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, entity.getCode());
             statement.setString(2, entity.getFullName());
             statement.setString(3, entity.getSign().toString());
-            statement.execute();
+            statement.setLong(4, entity.getId());
 
-            entity.setId(statement.getGeneratedKeys().getLong("id"));
+            statement.execute();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -130,23 +132,11 @@ public class CurrencyRepository implements CrudRepository<Currency> {
 
     @Override
     public void delete(Long id) {
+        final String query = "DELETE FROM currencyexchanger.currencies WHERE id=" + id;
+
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "DELETE FROM currencyexchanger.currencies WHERE id=" + id)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
-            statement.execute();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void delete(String name) {
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "DELETE FROM currencyexchanger.currencies WHERE code=?")) {
-
-            statement.setString(1, name);
             statement.execute();
 
         } catch (SQLException e) {
