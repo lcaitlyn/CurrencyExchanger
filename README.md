@@ -6,6 +6,8 @@ REST API для описания валют и обменных курсов. П
 
 Автор: https://github.com/zhukovsd
 
+Код ревью от автора: https://www.youtube.com/watch?v=x2I655fucmo&t=350s
+
 ## Что нужно знать
 
 - Java - коллекции, ООП
@@ -257,7 +259,6 @@ HTTP коды ответов:
 Пример ответа:
 ```
 {
-    "id": 0,
     "baseCurrency": {
         "id": 0,
         "name": "United States dollar",
