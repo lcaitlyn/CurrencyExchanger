@@ -31,19 +31,10 @@ public class Utils {
         }
     }
 
-    public static boolean isStringInteger(String i) {
-        try {
-            Integer.parseInt(i);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
     public static boolean isNotValidCurrenciesArgs(String code, String name, String sign) {
         return  (code == null || name == null || sign == null
                 || code.isEmpty() || name.isEmpty() || sign.isEmpty()
-                || code.length() != 3 || name.length() > 100 || sign.length() > 3);
+                || code.length() != 3 || name.length() > 100 || sign.length() > 5);
     }
 
     public static boolean isNotValidExchangeArgs(String base, String target, String rate) {

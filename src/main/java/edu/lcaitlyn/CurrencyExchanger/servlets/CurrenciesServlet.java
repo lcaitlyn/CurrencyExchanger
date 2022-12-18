@@ -39,12 +39,12 @@ public class CurrenciesServlet extends HttpServlet {
             return;
         }
 
-        if (currencyRepository.findByName(code) != null) {
+        if (currencyRepository.findByName(code).isPresent()) {
             resp.sendError(HttpServletResponse.SC_CONFLICT, "Валюта с таким кодом уже существует");
             return;
         }
 
-        currencyRepository.save(new Currency(code, name, sign.charAt(0)));
+        currencyRepository.save(new Currency(code, name, sign));
 
         doGet(req, resp);
     }

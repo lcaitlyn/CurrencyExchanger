@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 @MultipartConfig
 @WebServlet(name = "exchangeRates", value = "/exchangeRates")
@@ -44,30 +46,22 @@ public class ExchangeRatesServlet extends HttpServlet {
             return;
         }
 
-        Currency baseCurrency = currencyRepository.findByName(baseCurrencyCode);
-        Currency targetCurrency = currencyRepository.findByName(targetCurrencyCode);
+        Optional<Currency> baseCurrency = currencyRepository.findByName(baseCurrencyCode);
+        Optional<Currency> targetCurrency = currencyRepository.findByName(targetCurrencyCode);
 
-        if (baseCurrency == null || targetCurrency == null) {
+        if (!baseCurrency.isPresent() || !targetCurrency.isPresent()) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Валюта не найдена");
             return;
         }
 
-        if (exchangeRatesRepository.findByCodes(baseCurrencyCode, targetCurrencyCode) != null) {
+        if (exchangeRatesRepository.findByCodes(baseCurrencyCode, targetCurrencyCode).isPresent()) {
             resp.sendError(HttpServletResponse.SC_CONFLICT, "Валютная пара с таким кодом уже существует");
             return;
         }
 
-        ExchangeRate exchangeRate = new ExchangeRate(baseCurrency, targetCurrency, Double.parseDouble(rate));
+        ExchangeRate exchangeRate = new ExchangeRate(baseCurrency.get(), targetCurrency.get(), BigDecimal.valueOf(Double.parseDouble(rate)));
 
         exchangeRatesRepository.save(exchangeRate);
-
-        // проверка, если есть такой же, только в другом порядке, то его обновляю
-        exchangeRate = exchangeRatesRepository.findByCodes(targetCurrencyCode, baseCurrencyCode);
-
-        if (exchangeRate != null) {
-            exchangeRate.setRate(1 / Double.parseDouble(rate));
-            exchangeRatesRepository.update(exchangeRate);
-        }
 
         doGet(req, resp);
     }

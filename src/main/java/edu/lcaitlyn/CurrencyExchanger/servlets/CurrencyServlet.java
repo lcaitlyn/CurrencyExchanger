@@ -8,6 +8,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
+import java.util.Optional;
 
 @WebServlet(name = "CurrencyServlet", value = "/currency/*")
 public class CurrencyServlet extends HttpServlet {
@@ -27,13 +28,13 @@ public class CurrencyServlet extends HttpServlet {
 
         String currencyCode = request.getPathInfo().replaceFirst("/", "").toUpperCase();
 
-        Currency currency = currencyRepository.findByName(currencyCode);
+        Optional<Currency> currency = currencyRepository.findByName(currencyCode);
 
-        if (currency == null) {
+        if (!currency.isPresent()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Валюта не найдена. Пример: .../currency/USD");
             return;
         }
 
-        response.getWriter().write(new ObjectMapper().writeValueAsString(currency));
+        response.getWriter().write(new ObjectMapper().writeValueAsString(currency.get()));
     }
 }

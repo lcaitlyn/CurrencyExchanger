@@ -9,6 +9,8 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 @MultipartConfig
 @WebServlet(name = "exchangeRate", value = "/exchangeRate/*")
@@ -42,17 +44,15 @@ public class ExchangeRateServlet extends HttpServlet {
             return;
         }
 
-        String baseCurrencyCode = currenciesCodes.substring(0, 3);
-        String targetCurrencyCode = currenciesCodes.substring(3, 6);
+        Optional<ExchangeRate> exchangeRate = exchangeRatesRepository.findByCodes(
+                currenciesCodes.substring(0, 3), currenciesCodes.substring(3, 6));
 
-        ExchangeRate exchangeRate = exchangeRatesRepository.findByCodes(baseCurrencyCode, targetCurrencyCode);
-
-        if (exchangeRate == null) {
+        if (!exchangeRate.isPresent()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Обменный курс для пары не найден");
             return;
         }
 
-        response.getWriter().write(new ObjectMapper().writeValueAsString(exchangeRate));
+        response.getWriter().write(new ObjectMapper().writeValueAsString(exchangeRate.get()));
     }
 
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -70,21 +70,12 @@ public class ExchangeRateServlet extends HttpServlet {
 
         String currenciesCodes = request.getPathInfo().replaceFirst("/", "").toUpperCase();
 
-        String baseCurrencyCode = currenciesCodes.substring(0, 3);
-        String targetCurrencyCode = currenciesCodes.substring(3, 6);
+        Optional<ExchangeRate> exchangeRate = exchangeRatesRepository.findByCodes(
+                currenciesCodes.substring(0, 3), currenciesCodes.substring(3, 6));
 
-        ExchangeRate exchangeRate = exchangeRatesRepository.findByCodes(baseCurrencyCode, targetCurrencyCode);
-
-        exchangeRate.setRate(Double.parseDouble(rate));
-
-        exchangeRatesRepository.update(exchangeRate);
-
-        // проверка, если есть такой же, только в другом порядке, то его обновляю
-        exchangeRate = exchangeRatesRepository.findByCodes(targetCurrencyCode, baseCurrencyCode);
-
-        if (exchangeRate != null) {
-            exchangeRate.setRate(1 / Double.parseDouble(rate));
-            exchangeRatesRepository.update(exchangeRate);
+        if (exchangeRate.isPresent()) {
+            exchangeRate.get().setRate(BigDecimal.valueOf(Double.parseDouble(rate)));
+            exchangeRatesRepository.update(exchangeRate.get());
         }
 
         doGet(request, response);

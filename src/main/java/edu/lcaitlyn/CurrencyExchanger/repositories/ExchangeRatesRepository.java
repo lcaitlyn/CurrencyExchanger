@@ -3,12 +3,14 @@ package edu.lcaitlyn.CurrencyExchanger.repositories;
 import edu.lcaitlyn.CurrencyExchanger.models.ExchangeRate;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ExchangeRatesRepository implements CrudRepository<ExchangeRate> {
     private final DataSource dataSource;
@@ -19,8 +21,22 @@ public class ExchangeRatesRepository implements CrudRepository<ExchangeRate> {
         currencyRepository = new CurrencyRepository(dataSource);
     }
 
+    private ExchangeRate createNewExchangeRate(ResultSet resultSet) {
+        try {
+            return new ExchangeRate(
+                    resultSet.getLong("id"),
+                    currencyRepository.findById(resultSet.getLong("BaseCurrencyId")).get(),
+                    currencyRepository.findById(resultSet.getLong("TargetCurrencyId")).get(),
+                    BigDecimal.valueOf(resultSet.getDouble("rate")));
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
+
     @Override
-    public ExchangeRate findById(Long id) {
+    public Optional<ExchangeRate> findById(Long id) {
+        ExchangeRate exchangeRate = null;
         final String query = "SELECT * FROM currencyexchanger.exchangerates WHERE id=" + id;
 
         try (Connection connection = dataSource.getConnection();
@@ -30,17 +46,41 @@ public class ExchangeRatesRepository implements CrudRepository<ExchangeRate> {
 
             ResultSet resultSet = statement.getResultSet();
 
-            if (resultSet.next())
-                return new ExchangeRate(
-                        resultSet.getLong("id"),
-                        currencyRepository.findById(resultSet.getLong("BaseCurrencyId")),
-                        currencyRepository.findById(resultSet.getLong("TargetCurrencyId")),
-                        resultSet.getDouble("rate"));
-
+            if (resultSet.next()) {
+                exchangeRate = createNewExchangeRate(resultSet);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+
+        return Optional.ofNullable(exchangeRate);
+    }
+
+    public Optional<ExchangeRate> findByCodes(String baseCurrencyCode, String targetCurrencyCode) {
+        ExchangeRate exchangeRate = null;
+        final String query = "SELECT * FROM currencyexchanger.exchangerates WHERE " +
+                "basecurrencyid=? AND targetcurrencyid=?";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setLong(1,
+                    currencyRepository.findByName(baseCurrencyCode).get().getId());
+            statement.setLong(2,
+                    currencyRepository.findByName(targetCurrencyCode).get().getId());
+
+            statement.execute();
+
+            ResultSet resultSet = statement.getResultSet();
+
+            if (resultSet.next()) {
+                exchangeRate = createNewExchangeRate(resultSet);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return Optional.ofNullable(exchangeRate);
     }
 
     @Override
@@ -57,12 +97,7 @@ public class ExchangeRatesRepository implements CrudRepository<ExchangeRate> {
             ResultSet resultSet = statement.getResultSet();
 
             while (resultSet.next()) {
-                list.add(new ExchangeRate(
-                        resultSet.getLong("id"),
-                        currencyRepository.findById(resultSet.getLong("BaseCurrencyId")),
-                        currencyRepository.findById(resultSet.getLong("TargetCurrencyId")),
-                        resultSet.getDouble("rate")
-                ));
+                list.add(createNewExchangeRate(resultSet));
             }
 
             return list;
@@ -71,35 +106,6 @@ public class ExchangeRatesRepository implements CrudRepository<ExchangeRate> {
             throw new RuntimeException(e);
         }
     }
-    public ExchangeRate findByCodes(String baseCurrencyCode, String targetCurrencyCode) {
-        final String query = "SELECT * FROM currencyexchanger.exchangerates WHERE " +
-                "basecurrencyid=? AND targetcurrencyid=?";
-
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setLong(1,
-                    currencyRepository.findByName(baseCurrencyCode).getId());
-            statement.setLong(2,
-                    currencyRepository.findByName(targetCurrencyCode).getId());
-
-            statement.execute();
-
-            ResultSet resultSet = statement.getResultSet();
-
-            if (resultSet.next())
-                return new ExchangeRate(
-                    resultSet.getLong("id"),
-                    currencyRepository.findById(resultSet.getLong("BaseCurrencyId")),
-                    currencyRepository.findById(resultSet.getLong("TargetCurrencyId")),
-                    resultSet.getDouble("rate"));
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return null;
-    }
-
 
     @Override
     public void save(ExchangeRate entity) {
@@ -110,13 +116,15 @@ public class ExchangeRatesRepository implements CrudRepository<ExchangeRate> {
 
             statement.setLong(1, entity.getBaseCurrency().getId());
             statement.setLong(2, entity.getTargetCurrency().getId());
-            statement.setDouble(3, entity.getRate());
+            statement.setBigDecimal(3, entity.getRate());
 
             statement.execute();
 
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
+
+        updateReverseExchangeRate(entity);
     }
 
     @Override
@@ -128,7 +136,7 @@ public class ExchangeRatesRepository implements CrudRepository<ExchangeRate> {
 
             statement.setLong(1, entity.getBaseCurrency().getId());
             statement.setLong(2, entity.getTargetCurrency().getId());
-            statement.setDouble(3, entity.getRate());
+            statement.setBigDecimal(3, entity.getRate());
             statement.setLong(4, entity.getId());
 
             statement.execute();
@@ -136,6 +144,8 @@ public class ExchangeRatesRepository implements CrudRepository<ExchangeRate> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        updateReverseExchangeRate(entity);
     }
 
     @Override
@@ -149,6 +159,16 @@ public class ExchangeRatesRepository implements CrudRepository<ExchangeRate> {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void updateReverseExchangeRate(ExchangeRate exchangeRate) {
+        Optional<ExchangeRate> reverseExchangeRate = findByCodes(
+                exchangeRate.getTargetCurrency().getCode(), exchangeRate.getBaseCurrency().getCode());
+
+        if (reverseExchangeRate.isPresent()) {
+            reverseExchangeRate.get().setRate(new BigDecimal(1).divide(exchangeRate.getRate()));
+            update(reverseExchangeRate.get());
         }
     }
 }

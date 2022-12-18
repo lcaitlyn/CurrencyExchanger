@@ -1,8 +1,7 @@
 package edu.lcaitlyn.CurrencyExchanger.servlets;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.lcaitlyn.CurrencyExchanger.dto.Exchange;
 import edu.lcaitlyn.CurrencyExchanger.models.Currency;
 import edu.lcaitlyn.CurrencyExchanger.models.ExchangeRate;
 import edu.lcaitlyn.CurrencyExchanger.repositories.CurrencyRepository;
@@ -13,7 +12,8 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
-import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 @WebServlet(name = "ExchangeServlet", value = "/exchange")
 public class ExchangeServlet extends HttpServlet {
@@ -32,77 +32,57 @@ public class ExchangeServlet extends HttpServlet {
         String to = request.getParameter("to");
         String amount = request.getParameter("amount");
 
-        if (Utils.isNotValidExchangeArgs(from, to, amount) || !Utils.isStringInteger(amount)) {
+        if (Utils.isNotValidExchangeArgs(from, to, amount) || !Utils.isStringDouble(amount)) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Неправильно введен запрос. Пример: /exchange?from=USD&to=RUB&amount=10");
             return;
         }
 
-        Currency fromCurrency = currencyRepository.findByName(from);
-        Currency toCurrency = currencyRepository.findByName(to);
-
-        if (fromCurrency == null || toCurrency == null) {
+        if (!isCurrenciesValid(from, to)) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Указана не существующая валюта. Пример: /exchange?from=USD&to=RUB&amount=10");
             return;
         }
 
-        ExchangeRate exchangeRate;
-        Double rate;
-        Integer value = Integer.parseInt(amount);
+        BigDecimal rate = getRate(from, to);
 
-        if ((exchangeRate = exchangeRatesRepository.findByCodes(from, to)) != null)
-            rate = exchangeRate.getRate();
-        else if ((exchangeRate = exchangeRatesRepository.findByCodes(to, from)) != null)
-            rate = 1 / exchangeRate.getRate();
-        else {
-            ExchangeRate exchangeRateUSD_A = exchangeRatesRepository.findByCodes("USD", from);
-            ExchangeRate exchangeRateUSD_B = exchangeRatesRepository.findByCodes("USD", to);
-
-            if (exchangeRateUSD_A == null || exchangeRateUSD_B == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Не существует курс обмена");
-                return;
-            }
-
-            rate = exchangeRateUSD_B.getRate() / exchangeRateUSD_A.getRate();
+        if (rate == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Не существует курс обмена");
+            return;
         }
 
-        response.getWriter().write(makeJSON(fromCurrency, toCurrency, rate, value));
+        new ObjectMapper().writeValue(response.getWriter(), new Exchange(
+                currencyRepository.findByName(from).get(),
+                currencyRepository.findByName(to).get(),
+                rate,
+                new BigDecimal(amount),
+                rate.multiply(new BigDecimal(amount))
+        ));
     }
 
-//    {
-//        "baseCurrency": {
-//                "id": 1,
-//                "code": "USD",
-//                "fullName": "US Dollar",
-//                "sign": "$"
-//        },
-//        "targetCurrency": {
-//                "id": 3,
-//                "code": "RUB",
-//                "fullName": "Russian Ruble",
-//                "sign": "₽"
-//        },
-//        "rate": 63.75,
-//        "amount": 10,
-//        "convertedAmount": 637.5
-//    }
-    private String makeJSON(Currency from, Currency to, Double rate, Integer amount) {
-        JsonFactory jsonFactory = new JsonFactory();
-        StringWriter stringWriter = new StringWriter();
-        try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(stringWriter)) {
-            jsonGenerator.setCodec(new ObjectMapper());
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeFieldName("baseCurrency");
-            jsonGenerator.writeObject(from);
-            jsonGenerator.writeFieldName("targetCurrency");
-            jsonGenerator.writeObject(to);
-            jsonGenerator.writeNumberField("rate", rate);
-            jsonGenerator.writeNumberField("amount", amount);
-            jsonGenerator.writeNumberField("convertedAmount", rate * amount);
-            jsonGenerator.writeEndObject();
-            jsonGenerator.flush();
-            return stringWriter.toString();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private boolean isCurrenciesValid(String from, String to) {
+        Optional<Currency> fromCurrency = currencyRepository.findByName(from);
+        Optional<Currency> toCurrency = currencyRepository.findByName(to);
+
+        return (fromCurrency.isPresent() && toCurrency.isPresent());
+    }
+
+    private BigDecimal getRate(String from, String to) {
+        Optional<ExchangeRate> exchangeRate = exchangeRatesRepository.findByCodes(from, to);
+
+        if (exchangeRate.isPresent())
+            return exchangeRate.get().getRate();
+
+        Optional<ExchangeRate> reverseExchangeRate = exchangeRatesRepository.findByCodes(to, from);
+
+        if (reverseExchangeRate.isPresent())
+            return reverseExchangeRate.get().getRate();
+
+        Optional<ExchangeRate> exchangeRateUSD_A = exchangeRatesRepository.findByCodes("USD", from);
+        Optional<ExchangeRate> exchangeRateUSD_B = exchangeRatesRepository.findByCodes("USD", to);
+
+        if (exchangeRateUSD_A.isPresent() && exchangeRateUSD_B.isPresent()) {
+            return exchangeRateUSD_A.get().getRate().divide(exchangeRateUSD_B.get().getRate());
         }
+
+        return null;
     }
 }
